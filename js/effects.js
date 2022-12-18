@@ -1,139 +1,127 @@
-const effects = {
+const sliderOptions = {
   chrome: {
-    filter: 'grayscale',
-    units: '',
-    options: {
-      range: {
-        min: 0,
-        max: 1,
-      },
-      start: 1,
-      step: 0.1,
-    }
+    MIN: 0,
+    MAX: 1,
+    STEP: 0.1
   },
   sepia: {
-    filter: 'sepia',
-    units: '',
-    options: {
-      range: {
-        min: 0,
-        max: 1,
-      },
-      start: 1,
-      step: 0.1,
-    }
+    MIN: 0,
+    MAX: 1,
+    STEP: 0.1
   },
   marvin: {
-    filter: 'invert',
-    units: '%',
-    options: {
-      range: {
-        min: 0,
-        max: 100,
-      },
-      start: 100,
-      step: 1,
-    }
+    MIN: 0,
+    MAX: 100,
+    STEP: 1
   },
   phobos: {
-    filter: 'blur',
-    units: 'px',
-    options: {
-      range: {
-        min: 0,
-        max: 3,
-      },
-      start: 3,
-      step: 0.1,
-    }
+    MIN: 0,
+    MAX: 3,
+    STEP: 0.1
   },
   heat: {
-    filter: 'brightness',
-    units: '',
-    options: {
-      range: {
-        min: 1,
-        max: 3,
-      },
-      start: 3,
-      step: 0.1,
-    }
+    MIN: 1,
+    MAX: 3,
+    STEP: 0.1
+  }
+};
+
+const editForm = document.querySelector('.img-upload__overlay');
+const effectsList = editForm.querySelector('.effects__list');
+const imageElement = editForm.querySelector('.img-upload__preview').children[0];
+const sliderField = editForm.querySelector('.img-upload__effect-level');
+const sliderElement = editForm.querySelector('.effect-level__slider');
+const effectLevel = editForm.querySelector('.effect-level__value');
+
+const effects = {
+  none: () => {
+    sliderField.classList.add('visually-hidden');
+    return '';
   },
-};
-const scaleValue = document.querySelector('.scale__control--value');
-const scaleContainer = document.querySelector('.img-upload__scale');
-const slider = document.querySelector('.effect-level__slider');
-const sliderWrapper = document.querySelector('.effect-level');
-const effectValue = document.querySelector('.effect-level__value');
-const imgPreview = document.querySelector('.img-upload__preview').querySelector('img');
-const effectList = document.querySelector('.effects__list');
-const scaleStep = 25;
-const minScale = 25;
-const maxScale = 100;
-
-
-const onScaleButtonClick = (event) => {
-  const scaleInput = Number.parseInt(scaleValue.value, 10);
-  let countScaleProcent;
-  const buttonScale = event.target;
-  if (buttonScale.matches('.scale__control--bigger') && scaleInput < maxScale) {
-    countScaleProcent =  scaleInput + scaleStep;
-    scaleValue.value = `${countScaleProcent}%`;
-  }
-
-  if (buttonScale.matches('.scale__control--smaller') && scaleInput > minScale) {
-    countScaleProcent = scaleInput - scaleStep;
-    scaleValue.value = `${countScaleProcent}%`;
-  }
-
-  if (countScaleProcent >= maxScale) {
-    countScaleProcent = maxScale;
-    scaleValue.value = `${countScaleProcent}%`;
-  }
-
-  if (countScaleProcent <= minScale) {
-    countScaleProcent = minScale;
-    scaleValue.value = `${countScaleProcent}%`;
-  }
-  imgPreview.style.transform = `scale(${countScaleProcent / 100})`;
-};
-
-const initEffects = () => {
-  noUiSlider.create(slider, {
-    range: {
-      min: 0,
-      max: 100,
-    },
-    start: 100,
-    step: 0.1,
-    connect: 'lower',
-    format: {
-      to: (value) => {
-        if (Number.isInteger(value)) {
-          return value.toFixed(0);
-        }
-        return value.toFixed(1);
-      },
-      from: (value) => parseFloat(value),
-    },
-  });
-};
-
-const onFilterButtonChange = (event) => {
-  const evtHandler = event.target.value;
-  if (evtHandler === 'none') {
-    sliderWrapper.classList.add('hidden');
-    imgPreview.style.filter = 'none';
-  }  else {
-    sliderWrapper.classList.remove('hidden');
-    imgPreview.removeAttribute('class');
-    imgPreview.classList.add(`effects__preview--${evtHandler}`);
-    slider.noUiSlider.updateOptions(effects[evtHandler].options);
-    slider.noUiSlider.on('update', () => {
-      effectValue.value = slider.noUiSlider.get();
-      imgPreview.style.filter = `${effects[evtHandler].filter}(${effectValue.value}${effects[evtHandler].units})`;
-    });
+  chrome: () => {
+    sliderField.classList.remove('visually-hidden');
+    return `grayscale(${effectLevel.value})`;
+  },
+  sepia: () => {
+    sliderField.classList.remove('visually-hidden');
+    return `sepia(${effectLevel.value})`;
+  },
+  marvin: () => {
+    sliderField.classList.remove('visually-hidden');
+    return `invert(${effectLevel.value}%)`;
+  },
+  phobos: () => {
+    sliderField.classList.remove('visually-hidden');
+    return `blur(${effectLevel.value}px)`;
+  },
+  heat: () => {
+    sliderField.classList.remove('visually-hidden');
+    return `brightness(${effectLevel.value})`;
   }
 };
 
-export {onFilterButtonChange, onScaleButtonClick, initEffects, scaleContainer, effectList, sliderWrapper};
+noUiSlider.create(sliderElement, {
+  range: {
+    min: 0,
+    max: 1
+  },
+  start: 1,
+  step: 1,
+  connect: 'lower'
+});
+
+sliderField.classList.add('visually-hidden');
+let currentEffect = '';
+
+const setSliderOptions = (effect) => {
+  const options = sliderOptions[effect];
+  sliderElement.noUiSlider.updateOptions({range: {min: options.MIN, max: options.MAX}, start: options.MAX, step: options.STEP});
+  effectLevel.value = options.MAX;
+};
+
+const setDefaultFilter = () => {
+  const defaultRadio = effectsList.querySelector('#effect-none');
+  defaultRadio.checked = true;
+
+  if (currentEffect !== '') {
+    imageElement.classList.remove(currentEffect);
+  }
+
+  currentEffect = '';
+
+  imageElement.style.filter = effects['none']();
+};
+
+const onEffectsListClick = (evt) => {
+  let target = evt.target;
+
+  if (target.classList.contains('effects__radio')) {
+    return;
+  }
+
+  if (target.classList.contains('effects__label')) {
+    target = target.querySelector('span');
+  }
+
+  if (target.classList.contains('effects__preview')) {
+    if (currentEffect !== '') {
+      imageElement.classList.remove(currentEffect);
+    }
+  }
+
+  currentEffect = target.classList[1];
+  imageElement.classList.add(currentEffect);
+
+  setSliderOptions(currentEffect.replace('effects__preview--', ''));
+  imageElement.style.filter = effects[currentEffect.replace('effects__preview--', '')]();
+};
+
+const onSliderChange = () => {
+  effectLevel.value = sliderElement.noUiSlider.get();
+  imageElement.style.filter = effects[currentEffect.replace('effects__preview--', '')]();
+};
+
+effectsList.addEventListener('click', onEffectsListClick);
+sliderElement.noUiSlider.on('change', onSliderChange);
+
+export {setDefaultFilter};

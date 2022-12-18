@@ -1,14 +1,11 @@
-import {renderUserPhotos} from './pictures.js';
-import {initEffects} from './effects.js';
-import {closeUploadPopup} from './form.js';
-import {submitForm} from './form.js';
-import {getData} from './api.js';
-import {showFilteredPictures} from './filter.js';
+import {loadPictures} from './pictures.js';
+import { loadErrored } from './messages.js';
+import { sendRequest } from './server-data.js';
+import './full-picture.js';
+import './upload-form.js';
+import './hashtags-validator.js';
+import './effects.js';
+import './filters.js';
 
-getData((pictures) => {
-  renderUserPhotos(pictures);
-  showFilteredPictures(pictures);
-});
+sendRequest(loadPictures, loadErrored, 'GET')();
 
-submitForm(closeUploadPopup);
-initEffects();

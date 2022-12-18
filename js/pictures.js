@@ -1,29 +1,39 @@
-import {showBigPicture} from './big-picture.js';
+import { onPictureClick } from './full-picture.js';
 
-const container = document.querySelector('.pictures');
-const template = document.querySelector('#picture').content.querySelector('.picture');
+const pictureTemplate = document.querySelector('#picture').content.querySelector('.picture');
+const picturesList = document.querySelector('.pictures');
+const picturesItems = [];
 
-const fragment = document.createDocumentFragment();
+const createPictureItem = (item) => {
+  const newPicture = pictureTemplate.cloneNode(true);
+  newPicture.querySelector('.picture__img').src = item.url;
+  newPicture.querySelector('.picture__likes').textContent = item.likes;
+  newPicture.querySelector('.picture__comments').textContent = item.comments.length;
 
-// функция создающая один фрагмент фотографии
-const createUserPhoto = (picture) => {
-  const element = template.cloneNode(true);
-  element.querySelector('.picture__img').src = picture.url;
-  element.querySelector('.picture__likes').textContent = picture.likes;
-  element.querySelector('.picture__comments').textContent = picture.comments.length;
-  element.addEventListener('click', () => {
-    showBigPicture(picture);
-  });
-  fragment.appendChild(element);
+  onPictureClick(newPicture, item);
+
+  return newPicture;
 };
 
-// здесь создаются все 25
-const renderUserPhotos = (pictures) => {
+const deleteAllPictures = () => {
+  const pictures = picturesList.querySelectorAll('.picture');
   pictures.forEach((picture) => {
-    createUserPhoto(picture);
+    picturesList.removeChild(picture);
   });
-  return container.appendChild(fragment);
+};
+
+const showPictures = (pictures) => {
+  deleteAllPictures();
+  const fragment = new DocumentFragment;
+  pictures.forEach((picture) => fragment.appendChild(picture));
+  picturesList.appendChild(fragment);
+  document.querySelector('.img-filters').classList.remove('img-filters--inactive');
+};
+
+const loadPictures = (pictures) => {
+  pictures.forEach((picture) => picturesItems.push(createPictureItem(picture)));
+  showPictures(picturesItems);
 };
 
 
-export {renderUserPhotos};
+export { loadPictures, showPictures, picturesItems };
